@@ -89,6 +89,8 @@ def sanitize_filename(filename: str) -> str:
     """
     # Replace invalid Windows filename characters: < > : " / \ | ? *
     cleaned = re.sub(r'[<>:"/\\|?*]', '_', filename)
+    # Collapse multiple underscores
+    cleaned = re.sub(r'_+', '_', cleaned)
     # Strip trailing spaces or dots
     cleaned = cleaned.strip('. ')
     return cleaned or "downloaded_stream"
