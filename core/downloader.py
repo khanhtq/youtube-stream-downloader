@@ -37,11 +37,11 @@ class DownloaderLogger:
 
     def warning(self, msg: str):
         if self.log_callback:
-            self.log_callback(f"[CẢNH BÁO] {msg}")
+            self.log_callback(f"[WARNING] {msg}")
 
     def error(self, msg: str):
         if self.log_callback:
-            self.log_callback(f"[LỖI] {msg}")
+            self.log_callback(f"[ERROR] {msg}")
 
 
 class StreamDownloader:
@@ -144,16 +144,16 @@ class StreamDownloader:
         orig_adaptive_fragments = YoutubeIE._live_adaptive_fragments
         try:
             log("==================================================")
-            log(" BẮT ĐẦU QUÁ TRÌNH TẢI STREAM / VIDEO")
+            log(" STARTING STREAM / VIDEO DOWNLOAD")
             log("==================================================")
-            log(f"URL mục tiêu: {url}")
+            log(f"Target URL: {url}")
 
             out_dir = options.get('output_dir') or os.getcwd()
             os.makedirs(out_dir, exist_ok=True)
-            log(f"Thư mục lưu: {out_dir}")
+            log(f"Output directory: {out_dir}")
 
             # 1. Fetch info
-            log("Đang phân tích thông tin luồng video...")
+            log("Analyzing stream metadata...")
             info_data = self.get_info(url)
             title = info_data['title']
             video_id = info_data['id']
@@ -162,9 +162,9 @@ class StreamDownloader:
             current_head_sq = info_data['current_head_sq']
             frag_duration = info_data['frag_duration']
 
-            log(f"Tiêu đề: {title}")
-            log(f"Kênh: {info_data['uploader']}")
-            log(f"Trạng thái: {'ĐANG TRỰC TIẾP (Livestream)' if is_live else 'Video / Stream đã kết thúc'}")
+            log(f"Title: {title}")
+            log(f"Channel: {info_data['uploader']}")
+            log(f"Status: {'LIVE NOW (Livestream)' if is_live else 'Recorded Video / Ended Stream'}")
 
             # 2. Parse range/cutoff settings
             mode = options.get('mode', 'range')
@@ -179,28 +179,28 @@ class StreamDownloader:
             if is_live:
                 if mode == 'cutoff' and cutoff_minutes > 0:
                     if not current_head_sq:
-                        log("[LƯU Ý] Không lấy được head sequence tự động, sử dụng cấu hình mặc định.")
+                        log("[NOTICE] Could not automatically obtain live head sequence, using defaults.")
                     else:
                         cutoff_frags = int((cutoff_minutes * 60) / frag_duration)
                         target_max_sq = max(0, current_head_sq - cutoff_frags)
                         target_dur_hours = (target_max_sq * frag_duration) / 3600
-                        log(f"-> Mốc cắt lùi: -{cutoff_minutes} phút so với hiện tại.")
-                        log(f"-> Dừng tại fragment: {target_max_sq} (~{target_dur_hours:.2f} giờ).")
+                        log(f"-> Cutoff point: -{cutoff_minutes} minutes before current live head.")
+                        log(f"-> Stopping at fragment: {target_max_sq} (~{target_dur_hours:.2f} hrs).")
                 elif mode == 'range':
                     if start_sec is not None and start_sec > 0:
                         target_min_sq = int(start_sec / frag_duration)
-                        log(f"-> Tải từ mốc: {format_seconds_to_time(start_sec)} (Fragment >= {target_min_sq})")
+                        log(f"-> Downloading from: {format_seconds_to_time(start_sec)} (Fragment >= {target_min_sq})")
                     if end_sec is not None and end_sec > 0:
                         target_max_sq = int(end_sec / frag_duration)
-                        log(f"-> Dừng tại mốc: {format_seconds_to_time(end_sec)} (Fragment <= {target_max_sq})")
+                        log(f"-> Stopping at: {format_seconds_to_time(end_sec)} (Fragment <= {target_max_sq})")
                 else:
-                    log("-> Chế độ: Tải toàn bộ luồng trực tiếp.")
+                    log("-> Mode: Downloading full live stream.")
 
                 # Hook live adaptive fragments generator
                 def custom_fragments(self_ie, vid_id, itag, client_name, live_start_time, url_feed, base_url, f_duration, last_seq_cache, ctx):
                     for frag in orig_adaptive_fragments(self_ie, vid_id, itag, client_name, live_start_time, url_feed, base_url, f_duration, last_seq_cache, ctx):
                         if self._cancel_event.is_set():
-                            raise DownloadCancelled("Quá trình tải đã bị hủy bởi người dùng.")
+                            raise DownloadCancelled("Download was cancelled by user.")
 
                         sq_match = re.search(r'[?&/]sq[/=](\d+)', frag['url'])
                         if sq_match:
@@ -208,7 +208,7 @@ class StreamDownloader:
                             if target_min_sq is not None and sq < target_min_sq:
                                 continue
                             if target_max_sq is not None and sq > target_max_sq:
-                                log(f"[Hoàn tất thu thập] Format {itag} đã đạt mốc fragment {sq} > {target_max_sq}. Dừng nạp.")
+                                log(f"[Collection Complete] Format {itag} reached fragment {sq} > {target_max_sq}. Stopping feed.")
                                 return
                         yield frag
 
@@ -217,8 +217,8 @@ class StreamDownloader:
                 # Finished stream or standard video
                 if mode == 'range' and (start_sec is not None or end_sec is not None):
                     s_text = format_seconds_to_time(start_sec) if start_sec is not None else "00:00:00"
-                    e_text = format_seconds_to_time(end_sec) if end_sec is not None else "Hết video"
-                    log(f"-> Tải đoạn cắt: Từ {s_text} đến {e_text}")
+                    e_text = format_seconds_to_time(end_sec) if end_sec is not None else "End of video"
+                    log(f"-> Downloading section: From {s_text} to {e_text}")
 
             # 3. Quality & format configuration
             quality = options.get('quality', 'best')
@@ -244,7 +244,7 @@ class StreamDownloader:
             # 4. Progress hook
             def ytdl_progress_hook(d):
                 if self._cancel_event.is_set():
-                    raise DownloadCancelled("Quá trình tải đã bị hủy bởi người dùng.")
+                    raise DownloadCancelled("Download was cancelled by user.")
 
                 status = d.get('status')
                 if status == 'downloading':
@@ -309,28 +309,28 @@ class StreamDownloader:
                     ydl_opts['download_ranges'] = yt_dlp.utils.download_range_func([], [[s, e]])
                     ydl_opts['force_keyframes_at_cuts'] = True
 
-            log(f"Bắt đầu tải với {concurrent_frags} luồng song song...")
+            log(f"Starting download with {concurrent_frags} parallel threads...")
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
 
             if self._cancel_event.is_set():
-                log("\n[THÔNG BÁO] Quá trình tải đã bị hủy bởi người dùng.")
+                log("\n[NOTICE] Download was cancelled by user.")
                 emit_progress({'status': 'cancelled'})
                 return False
 
             log("\n==================================================")
-            log(" TẢI XONG VÀ GHÉP FILE THÀNH CÔNG!")
+            log(" DOWNLOAD AND MERGE COMPLETED SUCCESSFULLY!")
             log("==================================================")
             emit_progress({'status': 'completed', 'percent': 100.0})
             return True
 
         except DownloadCancelled:
-            log("\n[HỦY] Tác vụ tải đã dừng lại theo yêu cầu.")
+            log("\n[CANCELLED] Download task was stopped as requested.")
             emit_progress({'status': 'cancelled'})
             return False
         except Exception as e:
             err_msg = str(e)
-            log(f"\n[LỖI TẢI VỀ] {err_msg}")
+            log(f"\n[DOWNLOAD ERROR] {err_msg}")
             emit_progress({'status': 'error', 'error': err_msg})
             return False
         finally:

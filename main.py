@@ -24,8 +24,8 @@ def main():
             app = App()
             app.mainloop()
         except ImportError as e:
-            print(f"Không thể khởi chạy giao diện GUI: {e}")
-            print("Đang chuyển sang chế độ CLI...")
+            print(f"Failed to launch GUI: {e}")
+            print("Falling back to CLI mode...")
             from cli import run_cli
             sys.exit(run_cli())
 

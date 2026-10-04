@@ -104,4 +104,4 @@ def check_ffmpeg() -> Tuple[bool, str]:
     path = shutil.which("ffmpeg")
     if path:
         return True, path
-    return False, "FFmpeg không tìm thấy trong PATH hệ thống."
+    return False, "FFmpeg was not found in system PATH."

@@ -63,7 +63,7 @@ class App(ctk.CTk):
 
         subtitle_label = ctk.CTkLabel(
             header_frame,
-            text="Công cụ tải livestream & video theo khoảng thời gian tùy chọn (Hỗ trợ cắt lùi live stream)",
+            text="A high-performance utility to download YouTube streams & videos with custom time ranges",
             font=ctk.CTkFont(size=12),
             text_color="gray70"
         )
@@ -72,7 +72,7 @@ class App(ctk.CTk):
         # FFmpeg status badge
         ffmpeg_ok, ffmpeg_info = check_ffmpeg()
         status_color = "#2ecc71" if ffmpeg_ok else "#e67e22"
-        status_text = "● FFmpeg: Sẵn sàng" if ffmpeg_ok else "▲ FFmpeg: Chưa có trong PATH"
+        status_text = "● FFmpeg: Ready" if ffmpeg_ok else "▲ FFmpeg: Not found in PATH"
         
         self.ffmpeg_badge = ctk.CTkLabel(
             header_frame,
@@ -88,7 +88,7 @@ class App(ctk.CTk):
 
         url_title = ctk.CTkLabel(
             url_card,
-            text="1. Đường dẫn Stream hoặc Video YouTube",
+            text="1. YouTube Stream or Video URL",
             font=ctk.CTkFont(size=14, weight="bold")
         )
         url_title.pack(anchor="w", padx=15, pady=(12, 6))
@@ -98,7 +98,7 @@ class App(ctk.CTk):
 
         self.url_entry = ctk.CTkEntry(
             url_input_row,
-            placeholder_text="https://www.youtube.com/live/... hoặc https://www.youtube.com/watch?v=...",
+            placeholder_text="https://www.youtube.com/live/... or https://www.youtube.com/watch?v=...",
             font=ctk.CTkFont(size=12),
             height=36
         )
@@ -106,7 +106,7 @@ class App(ctk.CTk):
 
         self.btn_paste = ctk.CTkButton(
             url_input_row,
-            text="Dán",
+            text="Paste",
             width=65,
             height=36,
             command=self._paste_clipboard
@@ -115,7 +115,7 @@ class App(ctk.CTk):
 
         self.btn_check = ctk.CTkButton(
             url_input_row,
-            text="Kiểm tra",
+            text="Check",
             width=85,
             height=36,
             fg_color="#34495e",
@@ -127,7 +127,7 @@ class App(ctk.CTk):
         # Metadata preview row
         self.info_preview = ctk.CTkLabel(
             url_card,
-            text="Chưa có thông tin video.",
+            text="No video information loaded.",
             font=ctk.CTkFont(size=11),
             text_color="gray60",
             anchor="w"
@@ -140,39 +140,39 @@ class App(ctk.CTk):
 
         range_title = ctk.CTkLabel(
             range_card,
-            text="2. Khoảng thời gian muốn tải",
+            text="2. Download Time Range",
             font=ctk.CTkFont(size=14, weight="bold")
         )
         range_title.pack(anchor="w", padx=15, pady=(12, 8))
 
         self.mode_selector = ctk.CTkSegmentedButton(
             range_card,
-            values=["Khoảng thời gian (Start - End)", "Cắt lùi Live (-N phút)", "Tải toàn bộ (Full)"],
+            values=["Time Range (Start - End)", "Live Cutoff (-N min)", "Full Download"],
             command=self._on_mode_change
         )
-        self.mode_selector.set("Khoảng thời gian (Start - End)")
+        self.mode_selector.set("Time Range (Start - End)")
         self.mode_selector.pack(fill="x", padx=15, pady=(0, 12))
 
         # Mode Container: Range
         self.frame_range = ctk.CTkFrame(range_card, fg_color="transparent")
         self.frame_range.pack(fill="x", padx=15, pady=(0, 12))
 
-        lbl_start = ctk.CTkLabel(self.frame_range, text="Bắt đầu từ:", font=ctk.CTkFont(size=12))
+        lbl_start = ctk.CTkLabel(self.frame_range, text="Start Time:", font=ctk.CTkFont(size=12))
         lbl_start.grid(row=0, column=0, sticky="w", padx=(0, 10), pady=4)
 
-        self.entry_start = ctk.CTkEntry(self.frame_range, placeholder_text="00:00:00 (Trống = Từ đầu)", width=180, height=32)
+        self.entry_start = ctk.CTkEntry(self.frame_range, placeholder_text="00:00:00 (Empty = Start)", width=180, height=32)
         self.entry_start.grid(row=0, column=1, sticky="w", padx=(0, 20), pady=4)
         self.entry_start.insert(0, "00:00:00")
 
-        lbl_end = ctk.CTkLabel(self.frame_range, text="Dừng lại tại:", font=ctk.CTkFont(size=12))
+        lbl_end = ctk.CTkLabel(self.frame_range, text="End Time:", font=ctk.CTkFont(size=12))
         lbl_end.grid(row=0, column=2, sticky="w", padx=(0, 10), pady=4)
 
-        self.entry_end = ctk.CTkEntry(self.frame_range, placeholder_text="01:30:00 (Trống = Đến hết)", width=180, height=32)
+        self.entry_end = ctk.CTkEntry(self.frame_range, placeholder_text="01:30:00 (Empty = End)", width=180, height=32)
         self.entry_end.grid(row=0, column=3, sticky="w", pady=4)
 
         lbl_range_hint = ctk.CTkLabel(
             self.frame_range,
-            text="💡 Hỗ trợ định dạng: HH:MM:SS (ví dụ 01:20:00) hoặc số giây (ví dụ 4800). Để trống = từ đầu / đến hết.",
+            text="Format: HH:MM:SS (e.g. 01:20:00) or total seconds (e.g. 4800). Leave empty to start from beginning / end.",
             font=ctk.CTkFont(size=11),
             text_color="gray60"
         )
@@ -181,19 +181,19 @@ class App(ctk.CTk):
         # Mode Container: Cutoff
         self.frame_cutoff = ctk.CTkFrame(range_card, fg_color="transparent")
 
-        lbl_cutoff = ctk.CTkLabel(self.frame_cutoff, text="Mốc cắt lùi:", font=ctk.CTkFont(size=12))
+        lbl_cutoff = ctk.CTkLabel(self.frame_cutoff, text="Cutoff Point:", font=ctk.CTkFont(size=12))
         lbl_cutoff.grid(row=0, column=0, sticky="w", padx=(0, 10), pady=4)
 
         self.entry_cutoff = ctk.CTkEntry(self.frame_cutoff, placeholder_text="45", width=120, height=32)
         self.entry_cutoff.grid(row=0, column=1, sticky="w", padx=(0, 10), pady=4)
         self.entry_cutoff.insert(0, str(self.config.get("default_cutoff_minutes", 45)))
 
-        lbl_unit = ctk.CTkLabel(self.frame_cutoff, text="phút so với thời điểm Live hiện tại", font=ctk.CTkFont(size=12))
+        lbl_unit = ctk.CTkLabel(self.frame_cutoff, text="minutes before current live head", font=ctk.CTkFont(size=12))
         lbl_unit.grid(row=0, column=2, sticky="w", pady=4)
 
         lbl_cutoff_hint = ctk.CTkLabel(
             self.frame_cutoff,
-            text="💡 Tải từ đầu luồng và dừng tại mốc trước thời điểm hiện tại N phút (như cấu hình gốc của dự án).",
+            text="Downloads from stream start and stops N minutes prior to the live head.",
             font=ctk.CTkFont(size=11),
             text_color="gray60"
         )
@@ -203,7 +203,7 @@ class App(ctk.CTk):
         self.frame_full = ctk.CTkFrame(range_card, fg_color="transparent")
         lbl_full_hint = ctk.CTkLabel(
             self.frame_full,
-            text="💡 Tải toàn bộ nội dung stream từ đầu đến thời điểm hiện tại hoặc toàn bộ video hoàn chỉnh.",
+            text="Downloads the entire stream from start to live head, or the complete video.",
             font=ctk.CTkFont(size=11),
             text_color="gray60"
         )
@@ -215,7 +215,7 @@ class App(ctk.CTk):
 
         opt_title = ctk.CTkLabel(
             opt_card,
-            text="3. Thư mục lưu & Định dạng đầu ra",
+            text="3. Output Directory & Format Settings",
             font=ctk.CTkFont(size=14, weight="bold")
         )
         opt_title.pack(anchor="w", padx=15, pady=(12, 8))
@@ -234,7 +234,7 @@ class App(ctk.CTk):
 
         btn_browse = ctk.CTkButton(
             folder_row,
-            text="Chọn thư mục...",
+            text="Browse...",
             width=110,
             height=34,
             command=self._browse_directory
@@ -243,7 +243,7 @@ class App(ctk.CTk):
 
         btn_open = ctk.CTkButton(
             folder_row,
-            text="Mở",
+            text="Open",
             width=60,
             height=34,
             fg_color="#34495e",
@@ -257,7 +257,7 @@ class App(ctk.CTk):
         options_row.pack(fill="x", padx=15, pady=(0, 12))
 
         # Format
-        lbl_fmt = ctk.CTkLabel(options_row, text="Định dạng:", font=ctk.CTkFont(size=12))
+        lbl_fmt = ctk.CTkLabel(options_row, text="Format:", font=ctk.CTkFont(size=12))
         lbl_fmt.grid(row=0, column=0, sticky="w", padx=(0, 8), pady=4)
         self.fmt_menu = ctk.CTkOptionMenu(
             options_row,
@@ -269,27 +269,27 @@ class App(ctk.CTk):
         self.fmt_menu.grid(row=0, column=1, sticky="w", padx=(0, 20), pady=4)
 
         # Quality
-        lbl_quality = ctk.CTkLabel(options_row, text="Chất lượng:", font=ctk.CTkFont(size=12))
+        lbl_quality = ctk.CTkLabel(options_row, text="Quality:", font=ctk.CTkFont(size=12))
         lbl_quality.grid(row=0, column=2, sticky="w", padx=(0, 8), pady=4)
         self.quality_menu = ctk.CTkOptionMenu(
             options_row,
-            values=["Tốt nhất (Gốc)", "1080p", "720p", "480p", "Chỉ âm thanh (MP3)"],
-            width=150,
+            values=["Best (Original)", "1080p", "720p", "480p", "Audio Only (MP3)"],
+            width=160,
             height=30
         )
-        self.quality_menu.set("Tốt nhất (Gốc)")
+        self.quality_menu.set("Best (Original)")
         self.quality_menu.grid(row=0, column=3, sticky="w", padx=(0, 20), pady=4)
 
         # Threads
-        lbl_threads = ctk.CTkLabel(options_row, text="Luồng tải:", font=ctk.CTkFont(size=12))
+        lbl_threads = ctk.CTkLabel(options_row, text="Threads:", font=ctk.CTkFont(size=12))
         lbl_threads.grid(row=0, column=4, sticky="w", padx=(0, 8), pady=4)
         self.threads_menu = ctk.CTkOptionMenu(
             options_row,
-            values=["16 luồng (Tối đa)", "8 luồng", "4 luồng"],
-            width=135,
+            values=["16 Threads (Max Speed)", "8 Threads", "4 Threads"],
+            width=170,
             height=30
         )
-        self.threads_menu.set("16 luồng (Tối đa)")
+        self.threads_menu.set("16 Threads (Max Speed)")
         self.threads_menu.grid(row=0, column=5, sticky="w", pady=4)
 
         # 5. Section: Action Controls & Progress
@@ -301,7 +301,7 @@ class App(ctk.CTk):
 
         self.btn_download = ctk.CTkButton(
             action_row,
-            text="▶ BẮT ĐẦU TẢI",
+            text="▶ START DOWNLOAD",
             font=ctk.CTkFont(size=14, weight="bold"),
             height=40,
             command=self._start_download
@@ -310,7 +310,7 @@ class App(ctk.CTk):
 
         self.btn_cancel = ctk.CTkButton(
             action_row,
-            text="✕ HỦY TẢI",
+            text="✕ CANCEL",
             font=ctk.CTkFont(size=13, weight="bold"),
             fg_color="#c0392b",
             hover_color="#962d22",
@@ -329,7 +329,7 @@ class App(ctk.CTk):
         # Stats label
         self.lbl_stats = ctk.CTkLabel(
             action_card,
-            text="Sẵn sàng thực hiện tác vụ.",
+            text="Ready.",
             font=ctk.CTkFont(size=12),
             text_color="gray70",
             anchor="w"
@@ -345,14 +345,14 @@ class App(ctk.CTk):
 
         lbl_log = ctk.CTkLabel(
             log_header,
-            text="Nhật ký hoạt động (Console Log)",
+            text="Activity Log (Console)",
             font=ctk.CTkFont(size=13, weight="bold")
         )
         lbl_log.pack(side="left")
 
         btn_clear_log = ctk.CTkButton(
             log_header,
-            text="Xóa log",
+            text="Clear Log",
             width=70,
             height=26,
             fg_color="#34495e",
@@ -380,7 +380,7 @@ class App(ctk.CTk):
 
     def _browse_directory(self):
         initial = self.out_dir_entry.get().strip() or os.getcwd()
-        selected = filedialog.askdirectory(initialdir=initial, title="Chọn thư mục lưu video")
+        selected = filedialog.askdirectory(initialdir=initial, title="Select Output Directory")
         if selected:
             self.out_dir_entry.delete(0, "end")
             self.out_dir_entry.insert(0, selected)
@@ -394,18 +394,18 @@ class App(ctk.CTk):
             except Exception:
                 subprocess.Popen(["explorer", target_dir])
         else:
-            messagebox.showwarning("Thông báo", "Thư mục lưu video không tồn tại hoặc chưa được chọn.")
+            messagebox.showwarning("Notice", "Output directory does not exist or has not been selected.")
 
     def _on_mode_change(self, mode: str):
         self.frame_range.pack_forget()
         self.frame_cutoff.pack_forget()
         self.frame_full.pack_forget()
 
-        if mode == "Khoảng thời gian (Start - End)":
+        if mode == "Time Range (Start - End)":
             self.frame_range.pack(fill="x", padx=15, pady=(0, 12))
-        elif mode == "Cắt lùi Live (-N phút)":
+        elif mode == "Live Cutoff (-N min)":
             self.frame_cutoff.pack(fill="x", padx=15, pady=(0, 12))
-        elif mode == "Tải toàn bộ (Full)":
+        elif mode == "Full Download":
             self.frame_full.pack(fill="x", padx=15, pady=(0, 12))
 
     def _append_log(self, text: str):
@@ -420,24 +420,24 @@ class App(ctk.CTk):
     def _check_url_info(self):
         url = self.url_entry.get().strip()
         if not url:
-            messagebox.showwarning("Lỗi", "Vui lòng nhập đường link YouTube.")
+            messagebox.showwarning("Error", "Please enter a valid YouTube URL.")
             return
 
-        self.info_preview.configure(text="Đang phân tích thông tin từ YouTube...", text_color="#3498db")
+        self.info_preview.configure(text="Fetching metadata from YouTube...", text_color="#3498db")
         self.btn_check.configure(state="disabled")
 
         def _worker():
             try:
                 info = self.downloader.get_info(url)
-                status = "🔴 ĐANG LIVE" if info['is_live'] else "🎬 Video/VOD"
-                dur = format_seconds_to_time(info['duration']) if info['duration'] else "Trực tiếp"
-                display = f"[{status}] {info['title']} | Kênh: {info['uploader']} | Thời lượng: {dur}"
+                status = "🔴 LIVE" if info['is_live'] else "🎬 Video/VOD"
+                dur = format_seconds_to_time(info['duration']) if info['duration'] else "Live"
+                display = f"[{status}] {info['title']} | Channel: {info['uploader']} | Duration: {dur}"
                 self.after(0, lambda: self.info_preview.configure(text=display, text_color="#2ecc71"))
-                self._append_log(f"-> Phân tích thành công: {info['title']} ({status})")
+                self._append_log(f"-> Metadata fetched: {info['title']} ({status})")
             except Exception as e:
-                err_text = f"Không thể lấy thông tin: {e}"
+                err_text = f"Failed to fetch metadata: {e}"
                 self.after(0, lambda: self.info_preview.configure(text=err_text, text_color="#e74c3c"))
-                self._append_log(f"[LỖI] {err_text}")
+                self._append_log(f"[ERROR] {err_text}")
             finally:
                 self.after(0, lambda: self.btn_check.configure(state="normal"))
 
@@ -446,12 +446,12 @@ class App(ctk.CTk):
     def _start_download(self):
         url = self.url_entry.get().strip()
         if not url:
-            messagebox.showwarning("Lỗi", "Vui lòng nhập đường link YouTube cần tải.")
+            messagebox.showwarning("Error", "Please enter a valid YouTube URL.")
             return
 
         out_dir = self.out_dir_entry.get().strip()
         if not out_dir:
-            messagebox.showwarning("Lỗi", "Vui lòng chọn thư mục lưu video.")
+            messagebox.showwarning("Error", "Please select an output directory.")
             return
 
         mode_val = self.mode_selector.get()
@@ -459,35 +459,35 @@ class App(ctk.CTk):
         end_time = None
         cutoff_minutes = 0.0
 
-        if mode_val == "Khoảng thời gian (Start - End)":
+        if mode_val == "Time Range (Start - End)":
             mode = "range"
             start_time = self.entry_start.get().strip()
             end_time = self.entry_end.get().strip()
-        elif mode_val == "Cắt lùi Live (-N phút)":
+        elif mode_val == "Live Cutoff (-N min)":
             mode = "cutoff"
             try:
                 cutoff_minutes = float(self.entry_cutoff.get().strip() or 0)
             except ValueError:
-                messagebox.showerror("Lỗi", "Mốc cắt lùi phải là số phút hợp lệ (ví dụ: 45).")
+                messagebox.showerror("Error", "Cutoff must be a valid number of minutes (e.g. 45).")
                 return
         else:
             mode = "full"
 
         # Quality mapping
         quality_map = {
-            "Tốt nhất (Gốc)": "best",
+            "Best (Original)": "best",
             "1080p": "1080",
             "720p": "720",
             "480p": "480",
-            "Chỉ âm thanh (MP3)": "audio"
+            "Audio Only (MP3)": "audio"
         }
         quality = quality_map.get(self.quality_menu.get(), "best")
 
         # Threads mapping
         threads_map = {
-            "16 luồng (Tối đa)": 16,
-            "8 luồng": 8,
-            "4 luồng": 4
+            "16 Threads (Max Speed)": 16,
+            "8 Threads": 8,
+            "4 Threads": 4
         }
         threads = threads_map.get(self.threads_menu.get(), 16)
 
@@ -512,10 +512,10 @@ class App(ctk.CTk):
         })
 
         # Set UI state to downloading
-        self.btn_download.configure(state="disabled", text="⏳ ĐANG TẢI...")
+        self.btn_download.configure(state="disabled", text="⏳ DOWNLOADING...")
         self.btn_cancel.configure(state="normal")
         self.progress_bar.set(0.0)
-        self.lbl_stats.configure(text="Đang kết nối tới máy chủ luồng phát...")
+        self.lbl_stats.configure(text="Connecting to stream server...")
 
         def _on_progress(data: Dict[str, Any]):
             status = data.get("status")
@@ -525,15 +525,15 @@ class App(ctk.CTk):
                 eta = data.get("eta", "N/A")
                 f_idx = data.get("fragment_index")
                 f_cnt = data.get("fragment_count")
-                f_str = f" | Phân đoạn: {f_idx}/{f_cnt}" if f_cnt else ""
+                f_str = f" | Fragments: {f_idx}/{f_cnt}" if f_cnt else ""
                 
                 self.after(0, lambda: self.progress_bar.set(pct / 100.0))
                 self.after(0, lambda: self.lbl_stats.configure(
-                    text=f"Tiến độ: {pct:.1f}% | Tốc độ: {spd} | ETA: {eta}{f_str}"
+                    text=f"Progress: {pct:.1f}% | Speed: {spd} | ETA: {eta}{f_str}"
                 ))
             elif status == "finished":
                 self.after(0, lambda: self.progress_bar.set(1.0))
-                self.after(0, lambda: self.lbl_stats.configure(text="Đang xử lý ghép các phân đoạn video bằng FFmpeg..."))
+                self.after(0, lambda: self.lbl_stats.configure(text="Merging video fragments with FFmpeg..."))
 
         def _worker():
             try:
@@ -546,24 +546,24 @@ class App(ctk.CTk):
                 if success:
                     self.after(0, lambda: self.progress_bar.set(1.0))
                     self.after(0, lambda: self.lbl_stats.configure(
-                        text="✔ TẢI VÀ XỬ LÝ HOÀN TẤT!",
+                        text="✔ DOWNLOAD COMPLETED SUCCESSFULLY!",
                         text_color="#2ecc71"
                     ))
-                    self.after(0, lambda: messagebox.showinfo("Thành công", "Đã tải xong và lưu video thành công!"))
+                    self.after(0, lambda: messagebox.showinfo("Success", "Video downloaded and processed successfully!"))
                 elif self.downloader.is_cancelled:
                     self.after(0, lambda: self.lbl_stats.configure(
-                        text="✕ Tác vụ tải đã bị hủy.",
+                        text="✕ Download cancelled.",
                         text_color="#e67e22"
                     ))
                 else:
                     self.after(0, lambda: self.lbl_stats.configure(
-                        text="✕ Quá trình tải gặp lỗi. Vui lòng kiểm tra log.",
+                        text="✕ Download failed. Please check the log.",
                         text_color="#e74c3c"
                     ))
             except Exception as e:
-                self._append_log(f"[LỖI HỆ THỐNG] {e}")
+                self._append_log(f"[SYSTEM ERROR] {e}")
                 self.after(0, lambda: self.lbl_stats.configure(
-                    text=f"Lỗi: {e}",
+                    text=f"Error: {e}",
                     text_color="#e74c3c"
                 ))
             finally:
@@ -575,16 +575,16 @@ class App(ctk.CTk):
     def _cancel_download(self):
         if self.downloader.is_running:
             self.downloader.cancel()
-            self._append_log("-> Đã gửi tín hiệu hủy tải...")
-            self.btn_cancel.configure(state="disabled", text="Đang dừng...")
+            self._append_log("-> Cancellation signal sent...")
+            self.btn_cancel.configure(state="disabled", text="Cancelling...")
 
     def _reset_ui_after_download(self):
-        self.btn_download.configure(state="normal", text="▶ BẮT ĐẦU TẢI")
-        self.btn_cancel.configure(state="disabled", text="✕ HỦY TẢI")
+        self.btn_download.configure(state="normal", text="▶ START DOWNLOAD")
+        self.btn_cancel.configure(state="disabled", text="✕ CANCEL")
 
     def _on_close(self):
         if self.downloader.is_running:
-            if messagebox.askyesno("Xác nhận thoát", "Đang có tiến trình tải hoạt động. Bạn có chắc muốn dừng và thoát?"):
+            if messagebox.askyesno("Confirm Exit", "A download is currently in progress. Are you sure you want to cancel and exit?"):
                 self.downloader.cancel()
                 self.destroy()
         else:
